@@ -21,7 +21,7 @@ namespace Torimochi.Models
         /// <param name="firstAlloc">The callback function you want to occur only the first time when a new component of type T is allocated.</param>
         /// <param name="onAlloc">The callback function to be called everytime ObjectPool.Alloc() is called.</param>
         /// <param name="onFree">The callback function to be called everytime ObjectPool.Free() is called</param>
-        public ObjectMemoryPool(int initialCount = 0, Func<T> constructor = null, Action<T> firstAlloc = null, Action<T> onAlloc = null, Action<T> onFree = null)
+        public ObjectMemoryPool(uint initialCount = 0, Func<T> constructor = null, Action<T> firstAlloc = null, Action<T> onAlloc = null, Action<T> onFree = null)
         {
             this._constructor = constructor;
             this._firstAlloc = firstAlloc;
