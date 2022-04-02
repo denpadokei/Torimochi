@@ -25,26 +25,16 @@ namespace Torimochi
         /// [Init] methods that use a Constructor or called before regular methods like InitWithConfig.
         /// Only use [Init] with one Constructor.
         /// </summary>
-        public void Init(IPALogger logger, Zenjector zenjector)
+        public void Init(IPALogger logger, Zenjector zenjector, Config conf)
         {
             Instance = this;
             Log = logger;
             Log.Info("Torimochi initialized.");
-            zenjector.Install<TorimochiPlayerInstaller>(Location.Player);
-        }
-
-        #region BSIPA Config
-        //Uncomment to use BSIPA's config
-        /*
-        [Init]
-        public void InitWithConfig(Config conf)
-        {
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
             Log.Debug("Config loaded");
+            zenjector.Install<TorimochiPlayerInstaller>(Location.Player);
+            zenjector.Install<TorimochiMenuInstaller>(Location.Menu);
         }
-        */
-        #endregion
-
         [OnStart]
         public void OnApplicationStart()
         {

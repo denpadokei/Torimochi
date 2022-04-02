@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Torimochi.Configuration;
 using Torimochi.Models;
 using UnityEngine;
 using Zenject;
@@ -37,10 +38,9 @@ namespace Torimochi
         {
             this._beatmapObjectManager.noteWasCutEvent += this.OnNoteWasCutEvent;
             var noteController = Resources.FindObjectsOfTypeAll<GameNoteController>().FirstOrDefault();
-            this._noteMeshPool = new ObjectMemoryPool<MeshRenderer>(100,
+            this._noteMeshPool = new ObjectMemoryPool<MeshRenderer>(this._maxNoteCount,
                 () =>
                 {
-                    Logger.Debug("constractor");
                     var go = new GameObject("CloneNoteMesh");
                     var meshClone = GameObject.Instantiate(this._noteMeshRendrer);
                     meshClone.transform.SetParent(go.transform);
@@ -55,8 +55,6 @@ namespace Torimochi
                 null,
                 mesh =>
                 {
-                    Logger.Debug("alloc");
-                    Logger.Debug($"alloc activecount : {this._activeNoteCount}");
                     foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>()) {
                         target.enabled = true;
                         target.forceRenderingOff = false;
@@ -66,8 +64,6 @@ namespace Torimochi
                 },
                 mesh =>
                 {
-                    Logger.Debug("free");
-                    Logger.Debug($"free activecount : {this._activeNoteCount}");
                     foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>()) {
                         target.enabled = false;
                         target.forceRenderingOff = true;
@@ -132,8 +128,7 @@ namespace Torimochi
                 }
                 noteMesh.transform.position = noteCutInfo.notePosition;
                 noteMesh.transform.rotation = noteCutInfo.noteRotation;
-                while (99 < this._activeNoteCount && this._activeMesh.TryDequeue(out var oldActiveNote)) {
-                    Logger.Debug($"free mesh : {this._activeNoteCount}");
+                while (this._maxNoteCount - 1 < this._activeNoteCount && this._activeMesh.TryDequeue(out var oldActiveNote)) {
                     oldActiveNote.gameObject.transform.SetParent(null);
                     this._noteMeshPool.Free(oldActiveNote);
                 }
@@ -158,6 +153,7 @@ namespace Torimochi
         int _activeNoteCount = 0;
         private static readonly int s_colorId = Shader.PropertyToID("_Color");
         private static readonly string s_arrowName = "NoteArrow";
+        private int _maxNoteCount;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -175,6 +171,7 @@ namespace Torimochi
             this._noteMeshRendrer = GameObject.Instantiate(noteMesh);
             this._noteMeshRendrer.transform.SetParent(null);
             this._noteMeshRendrer.enabled = false;
+            this._maxNoteCount = PluginConfig.Instance.MaxNotesCount;
         }
 
         protected virtual void Dispose(bool disposing)
