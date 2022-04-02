@@ -1,13 +1,7 @@
-﻿using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Attributes;
-using BeatSaberMarkupLanguage.Components;
+﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.GameplaySetup;
-using BeatSaberMarkupLanguage.Settings;
 using BeatSaberMarkupLanguage.ViewControllers;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Torimochi.Configuration;
 using Zenject;
 
@@ -30,21 +24,21 @@ namespace Torimochi.VIews
         public void Initialize()
         {
             GameplaySetup.instance?.RemoveTab("Torimochi");
-            GameplaySetup.instance?.AddTab("Torimochi", String.Join(".", this.GetType().Namespace, this.GetType().Name), this);
+            GameplaySetup.instance?.AddTab("Torimochi", string.Join(".", this.GetType().Namespace, this.GetType().Name), this);
         }
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue) {
+            if (!this._disposedValue) {
                 if (disposing) {
                     GameplaySetup.instance?.RemoveTab("Torimochi");
                 }
-                _disposedValue = true;
+                this._disposedValue = true;
             }
         }
         public void Dispose()
         {
             // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }

@@ -1,12 +1,7 @@
 ﻿using IPA.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Torimochi.Configuration;
 using Torimochi.Models;
 using UnityEngine;
@@ -143,17 +138,17 @@ namespace Torimochi
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
-        private SaberManager _saberManager;
-        private BeatmapObjectManager _beatmapObjectManager;
+        private readonly SaberManager _saberManager;
+        private readonly BeatmapObjectManager _beatmapObjectManager;
         protected ColorManager _colorManager;
         private ObjectMemoryPool<MeshRenderer> _noteMeshPool;
-        private ConcurrentQueue<MeshRenderer> _activeMesh = new ConcurrentQueue<MeshRenderer>();
-        private MeshRenderer _noteMeshRendrer;
+        private readonly ConcurrentQueue<MeshRenderer> _activeMesh = new ConcurrentQueue<MeshRenderer>();
+        private readonly MeshRenderer _noteMeshRendrer;
         private bool _disposedValue;
-        int _activeNoteCount = 0;
+        private int _activeNoteCount = 0;
         private static readonly int s_colorId = Shader.PropertyToID("_Color");
         private static readonly string s_arrowName = "NoteArrow";
-        private int _maxNoteCount;
+        private readonly int _maxNoteCount;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -176,20 +171,23 @@ namespace Torimochi
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue) {
+            if (!this._disposedValue) {
                 if (disposing) {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)
                     GameObject.Destroy(this._noteMeshRendrer);
+                    while (this._activeMesh.TryDequeue(out var mesh)) {
+                        this._noteMeshPool.Free(mesh);
+                    }
                     this._noteMeshPool.Dispose();
                     this._beatmapObjectManager.noteWasCutEvent -= this.OnNoteWasCutEvent;
                 }
-                _disposedValue = true;
+                this._disposedValue = true;
             }
         }
         public void Dispose()
         {
             // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
         #endregion
