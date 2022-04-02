@@ -41,16 +41,19 @@ namespace Torimochi
                     meshClone.transform.SetParent(go.transform);
                     meshClone.transform.localPosition = Vector3.zero;
                     meshClone.transform.localRotation = Quaternion.identity;
-                    meshClone.enabled = true;
                     foreach (var item in go.GetComponentsInChildren<BoxCollider>(true)) {
                         GameObject.Destroy(item);
+                    }
+                    foreach (var target in go.GetComponentsInChildren<MeshRenderer>()) {
+                        target.enabled = false;
+                        target.forceRenderingOff = true;
                     }
                     return meshClone;
                 },
                 null,
                 mesh =>
                 {
-                    foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>()) {
+                    foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>(true)) {
                         target.enabled = true;
                         target.forceRenderingOff = false;
                     }
