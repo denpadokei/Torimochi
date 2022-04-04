@@ -140,11 +140,14 @@
     <Compile Include="Installers\TorimochiMenuInstaller.cs" />
     <Compile Include="Installers\TorimochiPlayerInstaller.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Models\CustomNotes\CustomNotesPrefabGetter.cs" />
+    <Compile Include="Models\CustomNotes\CustomNoteProtocol.cs" />
     <Compile Include="Models\ObjectMemoryPool.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="TorimochiController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TorimochiCustomNotesController.cs" />
     <Compile Include="VIews\TorimochiSettingTabViewController.cs" />
   </ItemGroup>
   <ItemGroup>
