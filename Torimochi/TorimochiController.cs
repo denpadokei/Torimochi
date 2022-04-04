@@ -352,7 +352,7 @@ namespace Torimochi
                 GameObject.Destroy(clone);
                 sliderNotePool.Despawn(note);
             }
-            
+
             this._maxNoteCount = (uint)PluginConfig.Instance.MaxNotesCount;
         }
 

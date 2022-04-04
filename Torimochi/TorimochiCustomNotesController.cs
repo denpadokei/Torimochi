@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Torimochi.Configuration;
 using Torimochi.Models.CustomNotes;
 using UnityEngine;
@@ -119,8 +115,8 @@ namespace Torimochi
         #region // メンバ変数
         private readonly SaberManager _saberManager;
         private readonly BeatmapObjectManager _beatmapObjectManager;
-        private ColorManager _colorManager;
-        private CustomNotesPrefabGetter _customNotesPrefabGetter;
+        private readonly ColorManager _colorManager;
+        private readonly CustomNotesPrefabGetter _customNotesPrefabGetter;
         private bool _disposedValue;
         private static readonly int s_colorId = Shader.PropertyToID("_Color");
         private readonly uint _maxNoteCount;
@@ -143,18 +139,18 @@ namespace Torimochi
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue) {
+            if (!this._disposedValue) {
                 if (disposing) {
                     this._beatmapObjectManager.noteWasCutEvent -= this.OnNoteWasCutEvent;
                 }
-                _disposedValue = true;
+                this._disposedValue = true;
             }
         }
 
         public void Dispose()
         {
             // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
         #endregion

@@ -13,7 +13,7 @@ namespace Torimochi.Models
         private readonly Func<T> _constructor;
         private bool _disposedValue;
         private volatile int _activeComponentCount = 0;
-        public int ActiveComponentCount => _activeComponentCount;
+        public int ActiveComponentCount => this._activeComponentCount;
         /// <summary>
         /// ObjectPool constructor function, used to setup the initial pool size and callbacks.
         /// </summary>

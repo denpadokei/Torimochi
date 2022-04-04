@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Torimochi.Models.CustomNotes
 {
@@ -64,6 +60,6 @@ namespace Torimochi.Models.CustomNotes
         LeftBurstSliderHeadDotPool = (Left | BurstSliderHead | Any),
         [Description("cn.right.burstslider.head.dot")]
         RightBurstSliderHeadDotPool = (Right | BurstSliderHead | Any),
-        
+
     }
 }
