@@ -50,10 +50,11 @@ namespace Torimochi
             }
         }
 
-        private MeshRenderer GetMeshRenderer(GameNoteController controller)
+        private MeshRenderer GetMeshRenderer(GameObject controller)
         {
-            var disappearingArrowController = controller.gameObject.GetComponentInParent<DisappearingArrowController>();
+            var disappearingArrowController = controller.GetComponentsInChildren<DisappearingArrowController>().FirstOrDefault();
             var noteMesh = disappearingArrowController.GetField<MeshRenderer, DisappearingArrowControllerBase<GameNoteController>>("_cubeMeshRenderer");
+            noteMesh.transform.SetParent(null, false);
             return noteMesh;
         }
 
@@ -67,8 +68,9 @@ namespace Torimochi
                     meshClone.transform.SetParent(go.transform);
                     meshClone.transform.localPosition = Vector3.zero;
                     meshClone.transform.localRotation = Quaternion.identity;
+                    meshClone.gameObject.SetActive(true);
                     foreach (var item in go.GetComponentsInChildren<BoxCollider>(true)) {
-                        GameObject.Destroy(item);
+                        GameObject.Destroy(item.gameObject);
                     }
                     foreach (var target in go.GetComponentsInChildren<MeshRenderer>()) {
                         target.enabled = false;
@@ -84,7 +86,6 @@ namespace Torimochi
                         target.forceRenderingOff = false;
                     }
                     this._activeMesh.Enqueue(mesh);
-                    this._activeNoteCount++;
                 },
                 mesh =>
                 {
@@ -92,7 +93,6 @@ namespace Torimochi
                         target.enabled = false;
                         target.forceRenderingOff = true;
                     }
-                    this._activeNoteCount--;
                 });
             this._noteHeadMeshPool = new ObjectMemoryPool<MeshRenderer>(this._maxNoteCount,
                 () =>
@@ -103,7 +103,7 @@ namespace Torimochi
                     meshClone.transform.localPosition = Vector3.zero;
                     meshClone.transform.localRotation = Quaternion.identity;
                     foreach (var item in go.GetComponentsInChildren<BoxCollider>(true)) {
-                        GameObject.Destroy(item);
+                        GameObject.Destroy(item.gameObject);
                     }
                     foreach (var target in go.GetComponentsInChildren<MeshRenderer>()) {
                         target.enabled = false;
@@ -119,7 +119,6 @@ namespace Torimochi
                         target.forceRenderingOff = false;
                     }
                     this._activeHeadMesh.Enqueue(mesh);
-                    this._activeHeadNoteCount++;
                 },
                 mesh =>
                 {
@@ -127,9 +126,9 @@ namespace Torimochi
                         target.enabled = false;
                         target.forceRenderingOff = true;
                     }
-                    this._activeHeadNoteCount--;
                 });
-            this._noteSliderMeshPool = new ObjectMemoryPool<MeshRenderer>(this._maxNoteCount,
+            if (this._noteSliderRendrer != null) {
+                this._noteSliderMeshPool = new ObjectMemoryPool<MeshRenderer>(this._maxNoteCount,
                 () =>
                 {
                     var go = new GameObject("CloneNoteSliderMesh");
@@ -138,7 +137,7 @@ namespace Torimochi
                     meshClone.transform.localPosition = Vector3.zero;
                     meshClone.transform.localRotation = Quaternion.identity;
                     foreach (var item in go.GetComponentsInChildren<BoxCollider>(true)) {
-                        GameObject.Destroy(item);
+                        GameObject.Destroy(item.gameObject);
                     }
                     foreach (var target in go.GetComponentsInChildren<MeshRenderer>()) {
                         target.enabled = false;
@@ -154,7 +153,6 @@ namespace Torimochi
                         target.forceRenderingOff = false;
                     }
                     this._activeSliderMesh.Enqueue(mesh);
-                    this._activeSliderNoteCount++;
                 },
                 mesh =>
                 {
@@ -162,8 +160,8 @@ namespace Torimochi
                         target.enabled = false;
                         target.forceRenderingOff = true;
                     }
-                    this._activeSliderNoteCount--;
                 });
+            }
         }
 
         private void ActiveMesh(in NoteCutInfo noteCutInfo)
@@ -220,7 +218,7 @@ namespace Torimochi
                     }
                     noteMesh.transform.position = noteCutInfo.notePosition;
                     noteMesh.transform.rotation = noteCutInfo.noteRotation;
-                    while (this._maxNoteCount - 1 < this._activeNoteCount && this._activeMesh.TryDequeue(out var oldActiveNote)) {
+                    while (this._maxNoteCount - 1 < this._noteMeshPool.ActiveComponentCount && this._activeMesh.TryDequeue(out var oldActiveNote)) {
                         oldActiveNote.gameObject.transform.SetParent(null);
                         this._noteMeshPool.Free(oldActiveNote);
                     }
@@ -254,7 +252,7 @@ namespace Torimochi
                     }
                     noteHeadMesh.transform.position = noteCutInfo.notePosition;
                     noteHeadMesh.transform.rotation = noteCutInfo.noteRotation;
-                    while (this._maxNoteCount - 1 < this._activeHeadNoteCount && this._activeHeadMesh.TryDequeue(out var oldActiveNote)) {
+                    while (this._maxNoteCount - 1 < this._noteHeadMeshPool.ActiveComponentCount && this._activeHeadMesh.TryDequeue(out var oldActiveNote)) {
                         oldActiveNote.gameObject.transform.SetParent(null);
                         this._noteHeadMeshPool.Free(oldActiveNote);
                     }
@@ -283,7 +281,7 @@ namespace Torimochi
                     }
                     noteSliderMesh.transform.position = noteCutInfo.notePosition;
                     noteSliderMesh.transform.rotation = noteCutInfo.noteRotation;
-                    while (this._maxNoteCount - 1 < this._activeSliderNoteCount && this._activeSliderMesh.TryDequeue(out var oldActiveNote)) {
+                    while (this._maxNoteCount - 1 < this._noteSliderMeshPool.ActiveComponentCount && this._activeSliderMesh.TryDequeue(out var oldActiveNote)) {
                         oldActiveNote.gameObject.transform.SetParent(null);
                         this._noteSliderMeshPool.Free(oldActiveNote);
                     }
@@ -310,9 +308,6 @@ namespace Torimochi
         private readonly MeshRenderer _noteHeadRendrer;
         private readonly MeshRenderer _noteSliderRendrer;
         private bool _disposedValue;
-        private int _activeNoteCount = 0;
-        private int _activeHeadNoteCount = 0;
-        private int _activeSliderNoteCount = 0;
         private static readonly int s_colorId = Shader.PropertyToID("_Color");
         private static readonly string s_arrowName = "NoteArrow";
         private static readonly string s_arrowGlowName = "NoteArrowGlow";
@@ -328,24 +323,36 @@ namespace Torimochi
             ColorManager colorManager,
             [Inject(Id = NoteData.GameplayType.Normal)] GameNoteController.Pool basicGameNotePool,
             [Inject(Id = NoteData.GameplayType.BurstSliderHead)] GameNoteController.Pool headGameNotePool,
-            [Inject(Id = NoteData.GameplayType.BurstSliderElement)] GameNoteController.Pool sliderNotePool)
+            [InjectOptional(Id = NoteData.GameplayType.BurstSliderElement)] GameNoteController.Pool sliderNotePool)
         {
             this._saberManager = saberManager;
             this._beatmapObjectManager = beatmapObjectManager;
             this._colorManager = colorManager;
             // 絶対なんかよろしくない気がする。
             var note = basicGameNotePool.Spawn();
-            this._noteMeshRendrer = GameObject.Instantiate(this.GetMeshRenderer(note));
+            var clone = GameObject.Instantiate(note.gameObject);
+            this._noteMeshRendrer = this.GetMeshRenderer(clone);
+            this._noteMeshRendrer.enabled = false;
+            this._noteMeshRendrer.gameObject.SetActive(false);
+            GameObject.Destroy(clone);
             basicGameNotePool.Despawn(note);
             note = headGameNotePool.Spawn();
-            this._noteHeadRendrer = GameObject.Instantiate(this.GetMeshRenderer(note));
-            basicGameNotePool.Despawn(note);
-            note = sliderNotePool.Spawn();
-            this._noteSliderRendrer = GameObject.Instantiate(this.GetMeshRenderer(note));
-            basicGameNotePool.Despawn(note);
-
-            this._noteMeshRendrer.transform.SetParent(null);
-            this._noteMeshRendrer.enabled = false;
+            clone = GameObject.Instantiate(note.gameObject);
+            this._noteHeadRendrer = this.GetMeshRenderer(clone);
+            this._noteHeadRendrer.enabled = false;
+            this._noteHeadRendrer.gameObject.SetActive(false);
+            GameObject.Destroy(clone);
+            headGameNotePool.Despawn(note);
+            if (sliderNotePool != null) {
+                note = sliderNotePool.Spawn();
+                clone = GameObject.Instantiate(note.gameObject);
+                this._noteSliderRendrer = this.GetMeshRenderer(clone);
+                this._noteSliderRendrer.enabled = false;
+                this._noteSliderRendrer.gameObject.SetActive(false);
+                GameObject.Destroy(clone);
+                sliderNotePool.Despawn(note);
+            }
+            
             this._maxNoteCount = (uint)PluginConfig.Instance.MaxNotesCount;
         }
 
@@ -364,9 +371,9 @@ namespace Torimochi
                     }
                     this._noteHeadMeshPool.Dispose();
                     while (this._activeSliderMesh.TryDequeue(out var mesh)) {
-                        this._noteSliderMeshPool.Free(mesh);
+                        this._noteSliderMeshPool?.Free(mesh);
                     }
-                    this._noteSliderMeshPool.Dispose();
+                    this._noteSliderMeshPool?.Dispose();
                     this._beatmapObjectManager.noteWasCutEvent -= this.OnNoteWasCutEvent;
                 }
                 this._disposedValue = true;

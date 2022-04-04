@@ -12,7 +12,8 @@ namespace Torimochi.Models
         private readonly Action<T> _onFree;
         private readonly Func<T> _constructor;
         private bool _disposedValue;
-
+        private volatile int _activeComponentCount = 0;
+        public int ActiveComponentCount => _activeComponentCount;
         /// <summary>
         /// ObjectPool constructor function, used to setup the initial pool size and callbacks.
         /// </summary>
@@ -51,6 +52,7 @@ namespace Torimochi.Models
                 obj = this.InternalAlloc();
             }
             this._onAlloc?.Invoke(obj);
+            this._activeComponentCount++;
             return obj;
         }
 
@@ -65,6 +67,7 @@ namespace Torimochi.Models
             }
             this._onFree?.Invoke(obj);
             this._freeObjects.Enqueue(obj);
+            this._activeComponentCount--;
         }
 
         protected virtual void Dispose(bool disposing)
