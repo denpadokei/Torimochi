@@ -49,17 +49,16 @@ namespace Torimochi.Models.CustomNotes
         [Description("cn.bomb")]
         BombPool = (Bomb),
         [Description("cn.left.burstslider")]
-        LeftBurstSliderPool = (Left | BurstSliderHead | Arrow),
+        LeftBurstSliderPool = (Left | BurstSliderElement | Arrow),
         [Description("cn.right.burstslider")]
-        RightBurstSliderPool = (Right | BurstSliderHead | Arrow),
+        RightBurstSliderPool = (Right | BurstSliderElement | Arrow),
         [Description("cn.left.burstslider.head")]
-        LeftBurstSliderHeadPool = (Left | BurstSliderElement | Arrow),
+        LeftBurstSliderHeadPool = (Left | BurstSliderHead | Arrow),
         [Description("cn.right.burstslider.head")]
-        RightBurstSliderHeadPool = (Right | BurstSliderElement | Arrow),
+        RightBurstSliderHeadPool = (Right | BurstSliderHead | Arrow),
         [Description("cn.left.burstslider.head.dot")]
         LeftBurstSliderHeadDotPool = (Left | BurstSliderHead | Any),
         [Description("cn.right.burstslider.head.dot")]
-        RightBurstSliderHeadDotPool = (Right | BurstSliderHead | Any),
-
+        RightBurstSliderHeadDotPool = (Right | BurstSliderHead | Any)
     }
 }

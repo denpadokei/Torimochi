@@ -8,9 +8,9 @@ namespace Torimochi.Installers
 {
     public class TorimochiPlayerInstaller : Installer
     {
-        private static object _loader;
-        public static int SelectedNoteIndex => _loader == null ? -1 : (int)_loader.GetType().GetProperty("SelectedNote").GetValue(_loader);
-        public static bool Enabled => _loader != null && (bool)_loader.GetType().GetProperty("Enabled").GetValue(_loader);
+        private object _loader;
+        public int SelectedNoteIndex => _loader == null ? -1 : (int)_loader.GetType().GetProperty("SelectedNote").GetValue(_loader);
+        public bool Enabled => _loader != null && (bool)_loader.GetType().GetProperty("Enabled").GetValue(_loader);
         public override void InstallBindings()
         {
             if (!PluginConfig.Instance.Enable) {

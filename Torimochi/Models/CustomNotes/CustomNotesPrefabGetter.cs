@@ -12,13 +12,12 @@ namespace Torimochi.Models.CustomNotes
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
-        public ConcurrentDictionary<int, MemoryPoolContainer<SiraPrefabContainer>> NoteMeshes { get; private set; } = new ConcurrentDictionary<int, MemoryPoolContainer<SiraPrefabContainer>>();
-        public ConcurrentDictionary<int, ConcurrentQueue<SiraPrefabContainer>> ActiveMeshes { get; private set; } = new ConcurrentDictionary<int, ConcurrentQueue<SiraPrefabContainer>>();
+        public ConcurrentDictionary<int, MemoryPoolContainer<SiraPrefabContainer>> NoteMeshes { get; } = new ConcurrentDictionary<int, MemoryPoolContainer<SiraPrefabContainer>>();
+        public ConcurrentDictionary<int, ConcurrentQueue<SiraPrefabContainer>> ActiveMeshes { get; } = new ConcurrentDictionary<int, ConcurrentQueue<SiraPrefabContainer>>();
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private bool _disposedValue;
-        private readonly ConcurrentDictionary<int, GameObject> _meshes = new ConcurrentDictionary<int, GameObject>();
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -50,15 +49,12 @@ namespace Torimochi.Models.CustomNotes
                         if (id == protocol.ToString()) {
                             continue;
                         }
-                        if (this.ActiveMeshes.TryGetValue((int)protocol, out var activeMeshes)) {
+                        if (this.ActiveMeshes.TryRemove((int)protocol, out var activeMeshes)) {
                             if (this.NoteMeshes.TryRemove((int)protocol, out var meshes)) {
                                 while (activeMeshes.TryDequeue(out var activeMesh)) {
                                     meshes.Despawn(activeMesh);
                                 }
                             }
-                        }
-                        while (this._meshes.TryRemove((int)protocol, out var mesh)) {
-                            GameObject.Destroy(mesh.gameObject);
                         }
                     }
                 }
