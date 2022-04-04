@@ -142,7 +142,6 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Models\CustomNotes\CustomNotesPrefabGetter.cs" />
     <Compile Include="Models\CustomNotes\CustomNoteProtocol.cs" />
-    <Compile Include="Models\CustomNotes\CustomNoteUtil.cs" />
     <Compile Include="Models\ObjectMemoryPool.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />

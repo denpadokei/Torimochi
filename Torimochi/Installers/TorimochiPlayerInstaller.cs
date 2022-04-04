@@ -10,6 +10,7 @@ namespace Torimochi.Installers
     {
         private static object _loader;
         public static int SelectedNoteIndex => _loader == null ? -1 : (int)_loader.GetType().GetProperty("SelectedNote").GetValue(_loader);
+        public static bool Enabled => _loader != null && (bool)_loader.GetType().GetProperty("Enabled").GetValue(_loader);
         public override void InstallBindings()
         {
             if (!PluginConfig.Instance.Enable) {
@@ -22,7 +23,7 @@ namespace Torimochi.Installers
             else {
                 _loader = this.Container.TryResolve(loaderType);
             }
-            if (PluginManager.GetPluginFromId("Custom Notes") != null && 1 <= SelectedNoteIndex) {
+            if (PluginManager.GetPluginFromId("Custom Notes") != null && Enabled && 1 <= SelectedNoteIndex) {
                 this.Container.BindInterfacesAndSelfTo<CustomNotesPrefabGetter>().AsCached();
                 this.Container.BindInterfacesAndSelfTo<TorimochiCustomNotesController>().AsCached().NonLazy();
             }
