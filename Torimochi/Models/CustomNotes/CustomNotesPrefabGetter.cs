@@ -3,7 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using Torimochi.Configuration;
-using UnityEngine;
 using Zenject;
 
 namespace Torimochi.Models.CustomNotes
