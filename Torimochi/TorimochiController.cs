@@ -81,6 +81,12 @@ namespace Torimochi
                 null,
                 mesh =>
                 {
+                    if (PluginConfig.Instance.ShowHMDCam) {
+                        this.SetGameObjectLayer(mesh.gameObject, 0);
+                    }
+                    else {
+                        this.SetGameObjectLayer(mesh.gameObject, s_thirdPersonOnlyLayer);
+                    }
                     foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>(true)) {
                         target.enabled = true;
                         target.forceRenderingOff = false;
@@ -114,6 +120,12 @@ namespace Torimochi
                 null,
                 mesh =>
                 {
+                    if (PluginConfig.Instance.ShowHMDCam) {
+                        this.SetGameObjectLayer(mesh.gameObject, 0);
+                    }
+                    else {
+                        this.SetGameObjectLayer(mesh.gameObject, s_thirdPersonOnlyLayer);
+                    }
                     foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>(true)) {
                         target.enabled = true;
                         target.forceRenderingOff = false;
@@ -148,6 +160,12 @@ namespace Torimochi
                 null,
                 mesh =>
                 {
+                    if (PluginConfig.Instance.ShowHMDCam) {
+                        this.SetGameObjectLayer(mesh.gameObject, 0);
+                    }
+                    else {
+                        this.SetGameObjectLayer(mesh.gameObject, s_thirdPersonOnlyLayer);
+                    }
                     foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>(true)) {
                         target.enabled = true;
                         target.forceRenderingOff = false;
@@ -292,6 +310,20 @@ namespace Torimochi
                     break;
             }
         }
+
+        private void SetGameObjectLayer(GameObject go, int layer)
+        {
+            if (go == null) {
+                return;
+            }
+            if (go.layer == layer) {
+                return;
+            }
+            go.layer = layer;
+            foreach (var transform in go.GetComponentsInChildren<Transform>(true)) {
+                transform.gameObject.layer = layer;
+            }
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
@@ -313,6 +345,7 @@ namespace Torimochi
         private static readonly string s_arrowGlowName = "NoteArrowGlow";
         private static readonly string s_circleGlowName = "NoteCircleGlow";
         private readonly uint _maxNoteCount;
+        private static readonly int s_thirdPersonOnlyLayer = 3;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄

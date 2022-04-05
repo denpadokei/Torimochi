@@ -18,6 +18,13 @@ namespace Torimochi.VIews
 
             set => PluginConfig.Instance.Enable = value;
         }
+        [UIValue("show-hmd")]
+        public bool ShowHMD
+        {
+            get => PluginConfig.Instance.ShowHMDCam;
+
+            set => PluginConfig.Instance.ShowHMDCam = value;
+        }
 
         private bool _disposedValue;
 

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using Torimochi.Configuration;
-using UnityEngine;
 using Zenject;
 
 namespace Torimochi.Models.CustomNotes
@@ -52,6 +51,9 @@ namespace Torimochi.Models.CustomNotes
                         if (this.ActiveMeshes.TryRemove((int)protocol, out var activeMeshes)) {
                             if (this.NoteMeshes.TryRemove((int)protocol, out var meshes)) {
                                 while (activeMeshes.TryDequeue(out var activeMesh)) {
+                                    if (activeMesh == null) {
+                                        continue;
+                                    }
                                     meshes.Despawn(activeMesh);
                                 }
                             }
