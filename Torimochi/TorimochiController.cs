@@ -130,10 +130,6 @@ namespace Torimochi
                         target.enabled = true;
                         target.forceRenderingOff = false;
                     }
-                    foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>(true)) {
-                        target.enabled = true;
-                        target.forceRenderingOff = false;
-                    }
                     this._activeHeadMesh.Enqueue(mesh);
                 },
                 mesh =>
@@ -169,10 +165,6 @@ namespace Torimochi
                     }
                     else {
                         this.SetGameObjectLayer(mesh.gameObject, s_thirdPersonOnlyLayer);
-                    }
-                    foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>(true)) {
-                        target.enabled = true;
-                        target.forceRenderingOff = false;
                     }
                     foreach (var target in mesh.gameObject.GetComponentsInChildren<MeshRenderer>(true)) {
                         target.enabled = true;
