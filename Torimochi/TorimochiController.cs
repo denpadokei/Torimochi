@@ -395,6 +395,10 @@ namespace Torimochi
                 if (disposing) {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)
                     GameObject.Destroy(this._noteMeshRendrer);
+                    GameObject.Destroy(this._noteHeadRendrer);
+                    if (this._noteSliderRendrer != null) {
+                        GameObject.Destroy(this._noteSliderRendrer);
+                    }
                     while (this._activeMesh.TryDequeue(out var mesh)) {
                         this._noteMeshPool.Free(mesh);
                     }
@@ -407,6 +411,7 @@ namespace Torimochi
                         this._noteSliderMeshPool?.Free(mesh);
                     }
                     this._noteSliderMeshPool?.Dispose();
+
                     this._beatmapObjectManager.noteWasCutEvent -= this.OnNoteWasCutEvent;
                 }
                 this._disposedValue = true;
