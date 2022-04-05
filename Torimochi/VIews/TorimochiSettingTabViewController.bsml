@@ -1,7 +1,8 @@
 ﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
 	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
 	>
-	<horizontal horizontal-fit="PreferredSize" >
+	<vertical horizontal-fit="PreferredSize" >
 		<bool-setting text="Enable" value="enable" apply-on-change="true"></bool-setting>
-	</horizontal>
+		<bool-setting text="Show first persion view" value="show-hmd" apply-on-change="true"></bool-setting>
+	</vertical>
 </bg>

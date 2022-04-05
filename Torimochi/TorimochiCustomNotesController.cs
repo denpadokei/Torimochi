@@ -101,13 +101,34 @@ namespace Torimochi
                 mesh.transform.position = noteCutInfo.notePosition;
                 mesh.transform.rotation = noteCutInfo.noteRotation;
                 mesh.transform.localScale = Vector3.one;
-                mesh.Prefab.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+                mesh.Prefab.transform.localScale = s_defaultScale;
+                if (PluginConfig.Instance.ShowHMDCam) {
+                    this.SetGameObjectLayer(mesh.Prefab, 0);
+                }
+                else {
+                    this.SetGameObjectLayer(mesh.Prefab, s_thirdPersonOnlyLayer);
+                }
                 mesh.Prefab.SetActive(true);
                 while (this._maxNoteCount - 1 < meshes.activeItems.Count && activeMeshes.TryDequeue(out var oldActiveNote)) {
-                    oldActiveNote.transform.SetParent(null);
+                    oldActiveNote.transform.SetParent(null, false);
+                    oldActiveNote.transform.position = Vector3.zero;
                     oldActiveNote.Prefab.SetActive(false);
                     meshes.Despawn(oldActiveNote);
                 }
+            }
+        }
+
+        private void SetGameObjectLayer(GameObject go, int layer)
+        {
+            if (go == null) {
+                return;
+            }
+            if (go.layer == layer) {
+                return;
+            }
+            go.layer = layer;
+            foreach (var transform in go.GetComponentsInChildren<Transform>(true)) {
+                transform.gameObject.layer = layer;
             }
         }
         #endregion
@@ -120,6 +141,8 @@ namespace Torimochi
         private bool _disposedValue;
         private static readonly int s_colorId = Shader.PropertyToID("_Color");
         private readonly uint _maxNoteCount;
+        private static readonly int s_thirdPersonOnlyLayer = 3;
+        private static readonly Vector3 s_defaultScale = new Vector3(0.4f, 0.4f, 0.4f);
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄

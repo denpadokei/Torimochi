@@ -9,6 +9,7 @@ namespace Torimochi.Configuration
         public static PluginConfig Instance { get; set; }
         public virtual bool Enable { get; set; } = true;
         public virtual int MaxNotesCount { get; set; } = 100;
+        public virtual bool ShowHMDCam { get; set; } = true;
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).

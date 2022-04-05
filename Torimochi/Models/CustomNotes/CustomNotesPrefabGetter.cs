@@ -18,7 +18,6 @@ namespace Torimochi.Models.CustomNotes
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private bool _disposedValue;
-        private readonly ConcurrentDictionary<int, GameObject> _meshes = new ConcurrentDictionary<int, GameObject>();
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -53,12 +52,12 @@ namespace Torimochi.Models.CustomNotes
                         if (this.ActiveMeshes.TryGetValue((int)protocol, out var activeMeshes)) {
                             if (this.NoteMeshes.TryRemove((int)protocol, out var meshes)) {
                                 while (activeMeshes.TryDequeue(out var activeMesh)) {
+                                    if (activeMesh == null) {
+                                        continue;
+                                    }
                                     meshes.Despawn(activeMesh);
                                 }
                             }
-                        }
-                        while (this._meshes.TryRemove((int)protocol, out var mesh)) {
-                            GameObject.Destroy(mesh.gameObject);
                         }
                     }
                 }
