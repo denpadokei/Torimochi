@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using Zenject;
 
-namespace Torimochi.TrickSaberUtil
+namespace Torimochi.Model.TrickSaberUtil
 {
     public class TSUtil
     {

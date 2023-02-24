@@ -7,8 +7,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Torimochi.Configuration;
+using Torimochi.Model.TrickSaberUtil;
 using Torimochi.Models;
-using Torimochi.TrickSaberUtil;
 using UnityEngine;
 using Zenject;
 
