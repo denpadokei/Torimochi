@@ -1,7 +1,9 @@
-﻿using IPA;
+﻿using HarmonyLib;
+using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using SiraUtil.Zenject;
+using System.Reflection;
 using Torimochi.Installers;
 using IPALogger = IPA.Logging.Logger;
 
@@ -12,6 +14,8 @@ namespace Torimochi
     {
         internal static Plugin Instance { get; private set; }
         internal static IPALogger Log { get; private set; }
+
+        private Harmony _harmony;
 
         [Init]
         /// <summary>
@@ -29,11 +33,40 @@ namespace Torimochi
             zenjector.Install<TorimochiPlayerInstaller>(Location.Player);
             zenjector.Install<TorimochiMenuInstaller>(Location.Menu);
         }
+
+        [OnEnable] public void OnEnable()
+        {
+            try {
+                if (_harmony != null) {
+                    _harmony.UnpatchSelf();
+                    _harmony = null;
+                }
+                _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            }
+            catch (System.Exception e) {
+                Log.Error(e);
+            }
+        }
+        [OnDisable] public void OnDisable()
+        {
+            try {
+
+                if (_harmony != null) {
+                    _harmony.UnpatchSelf();
+                    _harmony = null;
+                }
+            }
+            catch (System.Exception e) {
+                Log.Error(e);
+                throw;
+            }
+        }
+
         [OnStart]
         public void OnApplicationStart()
         {
             Log.Debug("OnApplicationStart");
-
+            
         }
 
         [OnExit]

@@ -1,9 +1,14 @@
 ﻿using IPA.Utilities;
+using SiraUtil.Zenject;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Torimochi.Configuration;
 using Torimochi.Models;
+using Torimochi.TrickSaberUtil;
 using UnityEngine;
 using Zenject;
 
@@ -13,7 +18,7 @@ namespace Torimochi
     /// Monobehaviours (scripts) are added to GameObjects.
     /// For a full list of Messages a Monobehaviour can receive from the game, see https://docs.unity3d.com/ScriptReference/MonoBehaviour.html.
     /// </summary>
-    public class TorimochiController : IInitializable, IDisposable
+    public class TorimochiController : IAsyncInitializable, IDisposable
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
@@ -29,10 +34,21 @@ namespace Torimochi
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public void Initialize()
+        public async Task InitializeAsync(CancellationToken token)
         {
             this._beatmapObjectManager.noteWasCutEvent += this.OnNoteWasCutEvent;
             this.SetUpPools();
+            if (!this._anyTSModel) {
+                return;
+            }
+            try {
+                var getModelMethod = this._tsModelType.GetMethod("GetSaberModel", BindingFlags.Instance | BindingFlags.NonPublic);
+                this._saberTypeAOriginalObject = await (Task<GameObject>)getModelMethod.Invoke(this._trickASaberModel, new object[] { this._saberManager.leftSaber });
+                this._saberTypeBOriginalObject = await (Task<GameObject>)getModelMethod.Invoke(this._trickBSaberModel, new object[] { this._saberManager.rightSaber });
+            }
+            catch (Exception e) {
+                Plugin.Log.Error(e);
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -43,7 +59,12 @@ namespace Torimochi
                 return;
             }
             try {
-                this.ActiveMesh(in noteCutInfo);
+                if (this._anyTSModel) {
+                    this.ActiveMeshToTSModelAndOriginalModel(in noteCutInfo);
+                }
+                else {
+                    this.ActiveMeshToOriginal(in noteCutInfo);
+                }
             }
             catch (Exception e) {
                 Plugin.Log.Error(e);
@@ -68,6 +89,15 @@ namespace Torimochi
                     meshClone.transform.SetParent(go.transform);
                     meshClone.transform.localPosition = Vector3.zero;
                     meshClone.transform.localRotation = Quaternion.identity;
+                    try {
+                        var cuttable = meshClone.gameObject.GetComponentInChildren<NoteBigCuttableColliderSize>();
+                        if (cuttable != null) {
+                            GameObject.Destroy(cuttable);
+                        }
+                    }
+                    catch (Exception e) {
+                        Plugin.Log.Error(e);
+                    }
                     meshClone.gameObject.SetActive(true);
                     foreach (var item in go.GetComponentsInChildren<BoxCollider>(true)) {
                         GameObject.Destroy(item.gameObject);
@@ -181,8 +211,11 @@ namespace Torimochi
                 });
             }
         }
-
-        private void ActiveMesh(in NoteCutInfo noteCutInfo)
+        /// <summary>
+        /// 今までの処理
+        /// </summary>
+        /// <param name="noteCutInfo"></param>
+        private void ActiveMeshToOriginal(in NoteCutInfo noteCutInfo)
         {
             var color = this._colorManager.ColorForType(noteCutInfo.noteData.colorType);
             switch (noteCutInfo.noteData.gameplayType) {
@@ -311,6 +344,213 @@ namespace Torimochi
             }
         }
 
+        /// <summary>
+        /// トリックセイバー用の処理
+        /// </summary>
+        /// <param name="noteCutInfo"></param>
+        private void ActiveMeshToTSModelAndOriginalModel(in NoteCutInfo noteCutInfo)
+        {
+            var color = this._colorManager.ColorForType(noteCutInfo.noteData.colorType);
+            switch (noteCutInfo.noteData.gameplayType) {
+                case NoteData.GameplayType.Normal:
+                    var noteMesh1 = this._noteMeshPool.Alloc();
+                    switch (noteCutInfo.saberType) {
+                        case SaberType.SaberA:
+                            var orgLeftSaber = this._saberTypeAOriginalObject;
+                            noteMesh1.gameObject.transform.SetParent(orgLeftSaber.transform, false);
+                            break;
+                        case SaberType.SaberB:
+                            var orgRightSaber = this._saberTypeBOriginalObject;
+                            noteMesh1.gameObject.transform.SetParent(orgRightSaber.transform, false);
+                            break;
+                        default:
+                            break;
+                    }
+                    var noteMesh2 = this._noteMeshPool.Alloc();
+                    switch (noteCutInfo.saberType) {
+                        case SaberType.SaberA:
+                            var tsLeftSaber = this.GetTSModel(noteCutInfo.saberType);
+                            noteMesh2.gameObject.transform.SetParent(tsLeftSaber.transform, false);
+                            break;
+                        case SaberType.SaberB:
+                            var tsRightSaber = this.GetTSModel(noteCutInfo.saberType);
+                            noteMesh2.gameObject.transform.SetParent(tsRightSaber.transform, false);
+                            break;
+                        default:
+                            break;
+                    }
+                    var isAny = false;
+                    switch (noteCutInfo.noteData.cutDirection) {
+                        case NoteCutDirection.Any:
+                            isAny = true;
+                            break;
+                        case NoteCutDirection.Up:
+                        case NoteCutDirection.Down:
+                        case NoteCutDirection.Left:
+                        case NoteCutDirection.Right:
+                        case NoteCutDirection.UpLeft:
+                        case NoteCutDirection.UpRight:
+                        case NoteCutDirection.DownLeft:
+                        case NoteCutDirection.DownRight:
+                        case NoteCutDirection.None:
+                        default:
+                            isAny = false;
+                            break;
+                    }
+                    void ApplDirectionyMesh(MeshRenderer mesh, in NoteCutInfo info)
+                    {
+                        var arrow = mesh.gameObject.GetComponentsInChildren<MeshRenderer>().FirstOrDefault(x => x.name == s_arrowName);
+                        var arrowGlow = mesh.gameObject.GetComponentsInChildren<MeshRenderer>().FirstOrDefault(x => x.name == s_arrowGlowName);
+                        var circleGlow = mesh.gameObject.GetComponentsInChildren<MeshRenderer>().FirstOrDefault(x => x.name == s_circleGlowName);
+                        arrow.forceRenderingOff = isAny;
+                        arrowGlow.forceRenderingOff = isAny;
+                        circleGlow.forceRenderingOff = !isAny;
+                        foreach (var target in mesh.gameObject.GetComponentsInChildren<MaterialPropertyBlockController>()) {
+                            var prop = target.materialPropertyBlock;
+                            if (target.name == s_arrowName) {
+                                prop.SetColor(s_colorId, Color.white.ColorWithAlpha(1f));
+                            }
+                            else {
+                                prop.SetColor(s_colorId, color.ColorWithAlpha(1f));
+                            }
+                            target.ApplyChanges();
+                        }
+                        mesh.transform.position = info.notePosition;
+                        mesh.transform.rotation = info.noteRotation;
+                        while (this._maxNoteCount - 1 < this._noteMeshPool.ActiveComponentCount && this._activeMesh.TryDequeue(out var oldActiveNote)) {
+                            oldActiveNote.gameObject.transform.SetParent(null);
+                            this._noteMeshPool.Free(oldActiveNote);
+                        }
+                    }
+                    ApplDirectionyMesh(noteMesh1, noteCutInfo);
+                    ApplDirectionyMesh(noteMesh2, noteCutInfo);
+                    break;
+                case NoteData.GameplayType.BurstSliderHead:
+                    var noteHeadMesh1 = this._noteHeadMeshPool.Alloc();
+                    switch (noteCutInfo.saberType) {
+                        case SaberType.SaberA:
+                            var leftSaber = _saberTypeAOriginalObject;
+                            noteHeadMesh1.gameObject.transform.SetParent(leftSaber.transform, false);
+                            break;
+                        case SaberType.SaberB:
+                            var rightSaber = _saberTypeBOriginalObject;
+                            noteHeadMesh1.gameObject.transform.SetParent(rightSaber.transform, false);
+                            break;
+                        default:
+                            break;
+                    }
+                    var noteHeadMesh2 = this._noteHeadMeshPool.Alloc();
+                    switch (noteCutInfo.saberType) {
+                        case SaberType.SaberA:
+                            var leftSaber = this.GetTSModel(noteCutInfo.saberType);
+                            noteHeadMesh2.gameObject.transform.SetParent(leftSaber.transform, false);
+                            break;
+                        case SaberType.SaberB:
+                            var rightSaber = this.GetTSModel(noteCutInfo.saberType);
+                            noteHeadMesh2.gameObject.transform.SetParent(rightSaber.transform, false);
+                            break;
+                        default:
+                            break;
+                    }
+                    void ApplyHeadMesh(MeshRenderer mesh, in NoteCutInfo info)
+                    {
+                        foreach (var item in mesh.gameObject.GetComponentsInChildren<MeshRenderer>()) {
+                            item.forceRenderingOff = false;
+                        }
+                        foreach (var target in mesh.gameObject.GetComponentsInChildren<MaterialPropertyBlockController>()) {
+                            var prop = target.materialPropertyBlock;
+                            if (target.name == s_arrowName) {
+                                prop.SetColor(s_colorId, Color.white.ColorWithAlpha(1f));
+                            }
+                            else {
+                                prop.SetColor(s_colorId, color.ColorWithAlpha(1f));
+                            }
+                            target.ApplyChanges();
+                        }
+                        mesh.transform.position = info.notePosition;
+                        mesh.transform.rotation = info.noteRotation;
+                        while (this._maxNoteCount - 1 < this._noteHeadMeshPool.ActiveComponentCount && this._activeHeadMesh.TryDequeue(out var oldActiveNote)) {
+                            oldActiveNote.gameObject.transform.SetParent(null);
+                            this._noteHeadMeshPool.Free(oldActiveNote);
+                        }
+                    }
+                    ApplyHeadMesh(noteHeadMesh1, in noteCutInfo);
+                    ApplyHeadMesh(noteHeadMesh2, in noteCutInfo);
+                    break;
+                case NoteData.GameplayType.BurstSliderElement:
+                    var noteSliderMesh1 = this._noteSliderMeshPool.Alloc();
+                    switch (noteCutInfo.saberType) {
+                        case SaberType.SaberA:
+                            var leftSaber = _saberTypeAOriginalObject;
+                            noteSliderMesh1.gameObject.transform.SetParent(leftSaber.transform, false);
+                            break;
+                        case SaberType.SaberB:
+                            var rightSaber = _saberTypeBOriginalObject;
+                            noteSliderMesh1.gameObject.transform.SetParent(rightSaber.transform, false);
+                            break;
+                        default:
+                            break;
+                    }
+                    var noteSliderMesh2 = this._noteSliderMeshPool.Alloc();
+                    switch (noteCutInfo.saberType) {
+                        case SaberType.SaberA:
+                            var leftSaber = this.GetTSModel(noteCutInfo.saberType);
+                            noteSliderMesh2.gameObject.transform.SetParent(leftSaber.transform, false);
+                            break;
+                        case SaberType.SaberB:
+                            var rightSaber = this.GetTSModel(noteCutInfo.saberType);
+                            noteSliderMesh2.gameObject.transform.SetParent(rightSaber.transform, false);
+                            break;
+                        default:
+                            break;
+                    }
+                    void ApplySliderMesh(MeshRenderer mesh, in NoteCutInfo info)
+                    {
+                        foreach (var item in mesh.gameObject.GetComponentsInChildren<MeshRenderer>()) {
+                            item.forceRenderingOff = false;
+                        }
+                        foreach (var target in mesh.gameObject.GetComponentsInChildren<MaterialPropertyBlockController>()) {
+                            var prop = target.materialPropertyBlock;
+                            prop.SetColor(s_colorId, color.ColorWithAlpha(1f));
+                            target.ApplyChanges();
+                        }
+                        mesh.transform.position = info.notePosition;
+                        mesh.transform.rotation = info.noteRotation;
+                        while (this._maxNoteCount - 1 < this._noteSliderMeshPool.ActiveComponentCount && this._activeSliderMesh.TryDequeue(out var oldActiveNote)) {
+                            oldActiveNote.gameObject.transform.SetParent(null);
+                            this._noteSliderMeshPool.Free(oldActiveNote);
+                        }
+                    }
+                    ApplySliderMesh(noteSliderMesh1, in noteCutInfo);
+                    ApplySliderMesh(noteSliderMesh2, in noteCutInfo);
+                    break;
+                case NoteData.GameplayType.BurstSliderElementFill:
+                case NoteData.GameplayType.Bomb:
+                default:
+                    break;
+            }
+        }
+
+        private GameObject GetTSModel(SaberType saber)
+        {
+            if (!this._anyTSModel) {
+                return null;
+            }
+            var tsModelProp = this._tsModelType.GetProperty("TrickModel", BindingFlags.Instance | BindingFlags.Public);
+            GameObject sb = null;
+            switch (saber) {
+                case SaberType.SaberA:
+                    sb = tsModelProp.GetValue(this._trickASaberModel, null) as GameObject;
+                    break;
+                case SaberType.SaberB:
+                    sb = tsModelProp.GetValue(this._trickBSaberModel, null) as GameObject;
+                    break;
+                default:
+                    break;
+            }
+            return sb;
+        }
+
         private void SetGameObjectLayer(GameObject go, int layer)
         {
             if (go == null) {
@@ -339,7 +579,13 @@ namespace Torimochi
         private readonly MeshRenderer _noteMeshRendrer;
         private readonly MeshRenderer _noteHeadRendrer;
         private readonly MeshRenderer _noteSliderRendrer;
+        private readonly bool _anyTSModel;
+        private Type _tsModelType;
+        private object _trickASaberModel;
+        private object _trickBSaberModel;
         private bool _disposedValue;
+        private GameObject _saberTypeAOriginalObject;
+        private GameObject _saberTypeBOriginalObject;
         private static readonly int s_colorId = Shader.PropertyToID("_Color");
         private static readonly string s_arrowName = "NoteArrow";
         private static readonly string s_arrowGlowName = "NoteArrowGlow";
@@ -356,7 +602,8 @@ namespace Torimochi
             ColorManager colorManager,
             [Inject(Id = NoteData.GameplayType.Normal)] GameNoteController.Pool basicGameNotePool,
             [Inject(Id = NoteData.GameplayType.BurstSliderHead)] GameNoteController.Pool headGameNotePool,
-            [InjectOptional(Id = NoteData.GameplayType.BurstSliderElement)] GameNoteController.Pool sliderNotePool)
+            [InjectOptional(Id = NoteData.GameplayType.BurstSliderElement)] GameNoteController.Pool sliderNotePool,
+            DiContainer container)
         {
             this._saberManager = saberManager;
             this._beatmapObjectManager = beatmapObjectManager;
@@ -387,6 +634,8 @@ namespace Torimochi
             }
 
             this._maxNoteCount = (uint)PluginConfig.Instance.MaxNotesCount;
+            this._anyTSModel = TSUtil.TryGetSaberTrickModel(container, SaberType.SaberA, out this._tsModelType, out this._trickASaberModel)
+                && TSUtil.TryGetSaberTrickModel(container, SaberType.SaberB, out this._tsModelType, out this._trickBSaberModel);
         }
 
         protected virtual void Dispose(bool disposing)
