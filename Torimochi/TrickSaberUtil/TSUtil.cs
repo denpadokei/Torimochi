@@ -1,12 +1,7 @@
-﻿using Hive.Versioning;
-using IPA.Loader;
+﻿using IPA.Loader;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Zenject;
 
 namespace Torimochi.TrickSaberUtil

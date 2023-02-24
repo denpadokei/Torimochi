@@ -1,9 +1,4 @@
 ﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Torimochi.Patches
@@ -11,7 +6,7 @@ namespace Torimochi.Patches
     [HarmonyPatch(typeof(NoteBigCuttableColliderSize), nameof(NoteBigCuttableColliderSize.Awake))]
     public class NoteBigCuttableColliderSizePatch
     {
-        
+
         [HarmonyPrefix]
         public static bool AwakePatch(NoteBigCuttableColliderSize __instance, ref NoteController ____noteController, ref Vector3 ____defaultColliderSize, ref BoxCollider ____boxCollider)
         {

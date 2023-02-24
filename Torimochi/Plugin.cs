@@ -34,7 +34,8 @@ namespace Torimochi
             zenjector.Install<TorimochiMenuInstaller>(Location.Menu);
         }
 
-        [OnEnable] public void OnEnable()
+        [OnEnable]
+        public void OnEnable()
         {
             try {
                 if (_harmony != null) {
@@ -47,7 +48,8 @@ namespace Torimochi
                 Log.Error(e);
             }
         }
-        [OnDisable] public void OnDisable()
+        [OnDisable]
+        public void OnDisable()
         {
             try {
 
@@ -66,7 +68,7 @@ namespace Torimochi
         public void OnApplicationStart()
         {
             Log.Debug("OnApplicationStart");
-            
+
         }
 
         [OnExit]
