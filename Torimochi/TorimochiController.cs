@@ -75,7 +75,10 @@ namespace Torimochi
         {
             var disappearingArrowController = controller.GetComponentsInChildren<DisappearingArrowController>().FirstOrDefault();
             var noteMesh = disappearingArrowController.GetField<MeshRenderer, DisappearingArrowControllerBase<GameNoteController>>("_cubeMeshRenderer");
-            GameObject.Destroy(noteMesh.gameObject.GetComponentsInChildren<NoteBigCuttableColliderSize>(true).FirstOrDefault());
+            var colliderSizes = noteMesh.gameObject.GetComponentsInChildren<NoteBigCuttableColliderSize>(true);
+            foreach (var collider in colliderSizes) {
+                GameObject.Destroy(collider);
+            }
             noteMesh.transform.SetParent(null, false);
             return noteMesh;
         }
