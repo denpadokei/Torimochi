@@ -148,7 +148,6 @@
     <Compile Include="Models\CustomNotes\CustomNotesPrefabGetter.cs" />
     <Compile Include="Models\CustomNotes\CustomNoteProtocol.cs" />
     <Compile Include="Models\ObjectMemoryPool.cs" />
-    <Compile Include="Patches\NoteBigCuttableColliderSizePatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="TorimochiController.cs" />

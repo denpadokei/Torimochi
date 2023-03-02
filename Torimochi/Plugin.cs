@@ -1,22 +1,17 @@
-﻿using HarmonyLib;
-using IPA;
+﻿using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using SiraUtil.Zenject;
-using System.Reflection;
 using Torimochi.Installers;
 using IPALogger = IPA.Logging.Logger;
 
 namespace Torimochi
 {
-    [Plugin(RuntimeOptions.SingleStartInit)]
+    [Plugin(RuntimeOptions.DynamicInit)]
     public class Plugin
     {
         internal static Plugin Instance { get; private set; }
         internal static IPALogger Log { get; private set; }
-
-        private Harmony _harmony;
-
         [Init]
         /// <summary>
         /// Called when the plugin is first loaded by IPA (either when the game starts or when the plugin is enabled if it starts disabled).
@@ -37,31 +32,12 @@ namespace Torimochi
         [OnEnable]
         public void OnEnable()
         {
-            try {
-                if (_harmony != null) {
-                    _harmony.UnpatchSelf();
-                    _harmony = null;
-                }
-                _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
-            }
-            catch (System.Exception e) {
-                Log.Error(e);
-            }
+
         }
         [OnDisable]
         public void OnDisable()
         {
-            try {
 
-                if (_harmony != null) {
-                    _harmony.UnpatchSelf();
-                    _harmony = null;
-                }
-            }
-            catch (System.Exception e) {
-                Log.Error(e);
-                throw;
-            }
         }
 
         [OnStart]
