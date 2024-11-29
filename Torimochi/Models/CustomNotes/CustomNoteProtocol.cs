@@ -33,7 +33,6 @@ namespace Torimochi.Models.CustomNotes
         Bomb = 1 << 4,
         BurstSliderHead = 1 << 5,
         BurstSliderElement = 1 << 6,
-        BurstSliderElementFill = 1 << 7,
 
         Arrow = 1 << 8,
         Any = 1 << 9,

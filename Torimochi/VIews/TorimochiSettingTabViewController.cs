@@ -30,14 +30,14 @@ namespace Torimochi.VIews
 
         public void Initialize()
         {
-            GameplaySetup.instance?.RemoveTab("Torimochi");
-            GameplaySetup.instance?.AddTab("Torimochi", string.Join(".", this.GetType().Namespace, this.GetType().Name), this);
+            GameplaySetup.Instance?.RemoveTab("Torimochi");
+            GameplaySetup.Instance?.AddTab("Torimochi", string.Join(".", this.GetType().Namespace, this.GetType().Name), this);
         }
         protected virtual void Dispose(bool disposing)
         {
             if (!this._disposedValue) {
                 if (disposing) {
-                    GameplaySetup.instance?.RemoveTab("Torimochi");
+                    GameplaySetup.Instance?.RemoveTab("Torimochi");
                 }
                 this._disposedValue = true;
             }
