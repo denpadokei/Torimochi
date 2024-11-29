@@ -69,9 +69,6 @@ namespace Torimochi
                 case NoteData.GameplayType.BurstSliderElement:
                     cuttingType |= CustomNoteProtocol.BurstSliderElement;
                     break;
-                case NoteData.GameplayType.BurstSliderElementFill:
-                    cuttingType |= CustomNoteProtocol.BurstSliderElementFill;
-                    break;
                 default:
                     break;
             }

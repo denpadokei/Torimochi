@@ -341,7 +341,6 @@ namespace Torimochi
                         this._noteSliderMeshPool.Free(oldActiveNote);
                     }
                     break;
-                case NoteData.GameplayType.BurstSliderElementFill:
                 case NoteData.GameplayType.Bomb:
                 default:
                     break;
@@ -528,7 +527,6 @@ namespace Torimochi
                     ApplySliderMesh(noteSliderMesh1, in noteCutInfo);
                     ApplySliderMesh(noteSliderMesh2, in noteCutInfo);
                     break;
-                case NoteData.GameplayType.BurstSliderElementFill:
                 case NoteData.GameplayType.Bomb:
                 default:
                     break;
