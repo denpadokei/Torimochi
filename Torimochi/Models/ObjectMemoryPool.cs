@@ -78,7 +78,6 @@ namespace Torimochi.Models
                     while (this._freeObjects.TryDequeue(out var obj) && obj != null) {
                         GameObject.Destroy(obj.gameObject);
                     }
-                    this._freeObjects.Clear();
                 }
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、ファイナライザーをオーバーライドします
                 // TODO: 大きなフィールドを null に設定します
